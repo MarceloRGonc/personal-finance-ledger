@@ -1,9 +1,38 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@source "../../src/main/resources/templates";
+@source "../../src/main/resources/static/js/app.js";
+
+@theme {
+  --text-xs--line-height: 1rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl--line-height: 2rem;
+  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --color-slate-400: #94a3b8;
+  --color-emerald-700: #047857;
+  --color-emerald-800: #065f46;
+  --color-rose-700: #be123c;
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
 
 @layer components {
-  .card { @apply rounded-xl border border-slate-200 bg-white shadow-sm; }
+  .card { @apply rounded-xl border border-slate-200 bg-white shadow-xs; }
   .section-heading { @apply text-base font-semibold tracking-tight text-slate-800; }
   .section-title { @apply text-sm font-semibold text-slate-500; }
   .hint { @apply text-xs text-slate-500; }
@@ -31,9 +60,10 @@
   .stat-label { @apply mb-1 text-xs font-medium text-slate-500; }
   .stat-value { @apply text-2xl font-bold leading-tight tabular-nums text-slate-900; }
 
-  .cell-input { @apply w-28 rounded border border-transparent bg-transparent px-1 py-0.5 text-right tabular-nums hover:border-slate-300 focus:border-emerald-600 focus:bg-white focus:outline-none; }
+  .cell-input { @apply w-28 rounded-sm border border-transparent bg-transparent px-1 py-0.5 text-right tabular-nums hover:border-slate-300 focus:border-emerald-600 focus:bg-white focus:outline-hidden; }
   .tags-input { @apply w-36 text-left; }
-  .input { @apply rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600; }
+  .input { @apply rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm focus:border-emerald-600 focus:outline-hidden focus:ring-1 focus:ring-emerald-600; }
+  .input::file-selector-button { @apply mr-3 cursor-pointer rounded-md border border-slate-300 bg-slate-100 px-2.5 py-0.5 text-sm font-medium text-slate-700 hover:bg-slate-200; }
   .field { @apply flex flex-col gap-1 text-xs font-medium text-slate-600; }
   .field-inline { @apply flex items-center gap-2 self-end pb-1.5 text-sm; }
   .form-panel { @apply border-t border-slate-200 p-4; }
@@ -41,7 +71,7 @@
   .btn { @apply inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50; }
   .btn-primary { @apply border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800; }
   .btn-small { @apply px-1.5 py-0.5 text-xs; }
-  .icon-btn { @apply rounded px-1.5 py-0.5 text-slate-500 hover:bg-slate-100; }
+  .icon-btn { @apply rounded-sm px-1.5 py-0.5 text-slate-500 hover:bg-slate-100; }
 
   .asset-th { @apply min-w-[7rem]; }
   .asset-controls { @apply invisible mt-1 flex justify-end gap-1 font-normal; }

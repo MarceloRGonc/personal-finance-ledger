@@ -8,10 +8,11 @@ services:
       - ./data:/app/data
     environment:
       FINANCE_BASE_YEAR: ${FINANCE_BASE_YEAR:-2023}
-    user: "${FINANCES_UID:-10001}:${FINANCES_GID:-10001}"
+    user: "${FINANCES_UID:-65532}:${FINANCES_GID:-65532}"
     read_only: true
     tmpfs:
       - /tmp
+      - /sqlite-native:exec,mode=1777,size=16m
     cap_drop:
       - ALL
     security_opt:

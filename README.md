@@ -24,7 +24,7 @@ With Docker:
 
     docker compose up --build
 
-On Linux, run `FINANCES_UID=$(id -u) FINANCES_GID=$(id -g) docker compose up --build` so the `./data` bind mount is writable. The container runs as a non-root user with a read-only filesystem and no extra capabilities.
+On Linux, run `FINANCES_UID=$(id -u) FINANCES_GID=$(id -g) docker compose up --build` so the `./data` bind mount is writable. The image is built on Google's distroless Java runtime (no shell, no package manager) and runs as a non-root user with a read-only filesystem and no extra capabilities. It has no shell, so there is no built-in health check; the container restarts on crashes, and you can probe `http://127.0.0.1:8080/` from the host.
 
 On first start the app creates `finances.db` in the data folder with its default revenue columns. Add data from the Summary, Salary, Extra Revenue, Expenses and Investments pages, or paste a whole month of expenses.
 

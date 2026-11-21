@@ -57,7 +57,7 @@ class ExpenseController {
     @PostMapping("/expenses/paste")
     String paste(@Valid PasteForm form, RedirectAttributes redirect) {
         try {
-            var count = expenses.paste(form.year(), form.month(), form.text(), form.replace());
+            var count = expenses.paste(form.year(), form.month(), form.text(), form.replacing());
             redirect.addFlashAttribute("message", count + (count == 1 ? " expense saved" : " expenses saved"));
         } catch (ExpensePasteException e) {
             redirect.addFlashAttribute("pasteErrors", e.errors());
@@ -76,7 +76,7 @@ class ExpenseController {
             redirect.addFlashAttribute("pasteErrors", e.errors());
         }
         redirect.addFlashAttribute("pasteText", form.text());
-        redirect.addFlashAttribute("pasteReplace", form.replace());
+        redirect.addFlashAttribute("pasteReplace", form.replacing());
         redirect.addFlashAttribute("pasteMonth", form.month());
         redirect.addFlashAttribute("pasteMonthLabel", Months.label(form.month()));
         return pageFor(form.year(), form.month());
@@ -99,7 +99,11 @@ class ExpenseController {
     }
 
     record PasteForm(@Min(1970) @Max(2200) int year, @Min(1) @Max(12) int month,
-                     @Size(max = 20000) String text, boolean replace) {
+                     @Size(max = 20000) String text, Boolean replace) {
+
+        boolean replacing() {
+            return Boolean.TRUE.equals(replace);
+        }
     }
 
     record ExpenseForm(@Min(1970) @Max(2200) int year, @Min(1) @Max(12) int month,

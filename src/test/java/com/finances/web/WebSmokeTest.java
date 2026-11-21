@@ -139,9 +139,9 @@ class WebSmokeTest extends IntegrationTestSupport {
 
     @Test
     void salesAndDeletedInvestmentsCanBeManagedFromTheInvestmentsPage() throws Exception {
-        mvc.perform(post("/investments/assets").param("name", "Crypto").param("tags", ""))
+        mvc.perform(post("/investments/assets").param("name", "Gold").param("tags", ""))
                 .andExpect(status().isOk());
-        var id = jdbc.queryForObject("SELECT id FROM investment_asset WHERE name = 'Crypto'", Long.class);
+        var id = jdbc.queryForObject("SELECT id FROM investment_asset WHERE name = 'Gold'", Long.class);
         mvc.perform(post("/investments/sales").param("year", "2026").param("month", "6").param("assetId", String.valueOf(id))
                         .param("proceeds", "120").param("cost", "100"))
                 .andExpect(status().isOk());

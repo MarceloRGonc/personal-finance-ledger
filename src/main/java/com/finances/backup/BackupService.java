@@ -9,6 +9,7 @@ import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -32,6 +33,7 @@ public class BackupService {
     private final SqliteFileValidator validator;
     private final Path directory;
     private final int retention;
+    private LocalDateTime lastStamp = LocalDateTime.MIN;
 
     public BackupService(DataSource dataSource, Flyway flyway, SqliteFileValidator validator, FinanceProperties properties) {
         this.dataSource = dataSource;
@@ -42,7 +44,7 @@ public class BackupService {
     }
 
     public synchronized Path createSnapshot(String prefix) {
-        var target = directory.resolve(prefix + "-" + LocalDateTime.now().format(STAMP) + ".db");
+        var target = directory.resolve(prefix + "-" + nextStamp().format(STAMP) + ".db");
         try {
             Files.createDirectories(directory);
             vacuumInto(target);
@@ -50,6 +52,12 @@ public class BackupService {
         } catch (IOException | SQLException e) {
             throw new BackupException("Could not create the snapshot", e);
         }
+    }
+
+    private LocalDateTime nextStamp() {
+        var now = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
+        lastStamp = now.isAfter(lastStamp) ? now : lastStamp.plus(1, ChronoUnit.MILLIS);
+        return lastStamp;
     }
 
     public byte[] exportSnapshot() {

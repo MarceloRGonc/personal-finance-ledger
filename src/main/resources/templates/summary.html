@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Summary')}"></head>
+<body class="bg-slate-50 text-slate-800">
+<header th:replace="~{fragments/layout :: nav}"></header>
+<main class="mx-auto max-w-7xl space-y-6 px-4 py-6">
+
+    <section class="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div th:each="entry : ${overview.yearly()}" class="card p-4">
+            <div class="stat-label" th:text="${@fmt.label(entry.key)}">Net</div>
+            <div class="stat-value" th:text="${@fmt.money(entry.value)}">0,00</div>
+        </div>
+    </section>
+
+    <section class="card p-4">
+        <h2 class="section-heading mb-4">Monthly overview</h2>
+        <div class="h-64">
+            <canvas th:attr="data-chart-url=@{/api/summary/{y}/monthly(y=${year})}" data-chart-type="monthly"></canvas>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="p-4 pb-0">
+            <h2 class="section-heading">Monthly roll-up</h2>
+        </div>
+        <div class="table-scroll mt-3">
+            <table class="grid-table">
+                <thead>
+                <tr>
+                    <th class="text-left col-fixed">Month</th>
+                    <th th:each="c : ${columns}" th:text="${@fmt.label(c)}">Col</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${overview.months()}">
+                    <td class="col-fixed" th:text="${row.label()}">January</td>
+                    <td th:each="c : ${columns}" class="num" th:text="${@fmt.money(row.values().get(c))}">0</td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr class="font-semibold">
+                    <td class="col-fixed">Total</td>
+                    <td th:each="c : ${columns}" class="num" th:text="${@fmt.money(overview.totals().get(c))}">0</td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="p-4 pb-0">
+            <h2 class="section-heading">Historical summary</h2>
+            <p class="text-xs text-slate-500 mt-1">
+                The base year (<span th:text="${history.baseYear()}">2023</span>) is typed in.
+                Each later year starts from the previous year's net value, adds its own monthly data, and keeps those values while it has no monthly data.
+            </p>
+        </div>
+        <div class="table-scroll mt-3">
+            <table class="grid-table">
+                <thead>
+                <tr>
+                    <th class="text-left col-fixed">Metric</th>
+                    <th th:each="y : ${history.years()}" th:text="${y}">2025</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="m : ${metrics}">
+                    <td class="col-fixed" th:text="${m.label()}">Net Value</td>
+                    <td th:each="y : ${history.years()}" th:with="value=${history.rows().get(m).get(y)}" class="num">
+                        <input th:if="${y == history.baseYear()}" type="number" step="0.01" name="amount" class="cell-input"
+                               th:value="${@fmt.plain(value)}"
+                               th:attr="hx-put=@{/summary/figures/{y}/{m}(y=${y},m=${m.name()})}"
+                               hx-trigger="change">
+                        <span th:unless="${y == history.baseYear()}" th:text="${value != null} ? ${@fmt.money(value)} : '—'">0</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="p-4 pb-0">
+            <h2 class="section-heading">Year-over-year comparison</h2>
+        </div>
+        <div class="table-scroll mt-3">
+            <table class="grid-table">
+                <thead>
+                <tr>
+                    <th class="text-left col-fixed">Year</th>
+                    <th th:each="m : ${metrics}" th:text="${m.label()}">Metric</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="c : ${comparisons}">
+                    <td class="col-fixed font-semibold" th:text="${c.year()}">2024</td>
+                    <td th:each="m : ${metrics}" class="num">
+                        <span th:if="${c.values().containsKey(m)}" th:text="${@fmt.money(c.values().get(m))}">0</span>
+                        <span th:if="${c.change().containsKey(m)}" class="delta"
+                              th:classappend="${c.change().get(m).signum() < 0} ? 'num-negative' : 'num-positive'"
+                              th:text="${(c.change().get(m).signum() > 0 ? '+' : '') + @fmt.money(c.change().get(m))}">+0</span>
+                        <span th:if="${c.changePercent().containsKey(m)}" class="delta-percent"
+                              th:text="${'(' + c.changePercent().get(m) + '%)'}"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="p-4">
+            <div class="h-72">
+                <canvas data-chart-type="comparison" th:attr="data-chart-url=@{/api/summary/comparison(year=${year})}"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="p-4 pb-0">
+            <h2 class="section-heading">Bank accounts &amp; liquidity — <span th:text="${year}">2026</span></h2>
+        </div>
+        <div class="table-scroll mt-3">
+            <table class="grid-table">
+                <thead>
+                <tr>
+                    <th class="text-left col-fixed">Account</th>
+                    <th>Balance</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a : ${accounts}">
+                    <td class="col-fixed" th:text="${a.name()}">Bank</td>
+                    <td class="num">
+                        <input type="number" step="0.01" name="balance" class="cell-input"
+                               th:value="${@fmt.plain(a.balance())}"
+                               th:attr="hx-put=@{/summary/accounts/{id}/balance(id=${a.id()},year=${year})}"
+                               hx-trigger="change">
+                    </td>
+                    <td class="text-right">
+                        <button class="icon-btn text-rose-700" title="Remove account" hx-confirm="Remove this account?"
+                                th:attr="hx-delete=@{/summary/accounts/{id}(id=${a.id()})}">&times;</button>
+                    </td>
+                </tr>
+                <tr th:if="${accounts.isEmpty()}">
+                    <td colspan="3" class="text-slate-400">No accounts yet.</td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr class="font-semibold">
+                    <td class="col-fixed">Bank total</td>
+                    <td class="num" th:text="${@fmt.money(overview.yearly().get('BANK_TOTAL'))}">0</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="col-fixed text-slate-500">Total liquid</td>
+                    <td class="num" th:text="${@fmt.money(overview.yearly().get('TOTAL_LIQUID'))}">0</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td class="col-fixed text-slate-500">Difference</td>
+                    <td class="num" th:text="${@fmt.money(overview.yearly().get('BANK_DIFFERENCE'))}">0</td>
+                    <td></td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="form-panel">
+            <p class="section-title mb-2">Add account</p>
+            <form hx-post="/summary/accounts" class="flex flex-wrap items-end gap-3">
+                <input type="hidden" name="year" th:value="${year}">
+                <label class="field">Name<input name="name" maxlength="60" required class="input"></label>
+                <label class="field">Opening balance<input name="balance" type="number" step="0.01" value="0" class="input"></label>
+                <button class="btn btn-primary">Add account</button>
+            </form>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>

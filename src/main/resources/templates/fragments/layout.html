@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="htmx-config" content='{"includeIndicatorStyles": false, "allowEval": false}'>
+    <title th:text="${title} + ' · Finances'">Finances</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script th:src="@{/js/htmx.min.js}" defer></script>
+    <script th:src="@{/js/chart.umd.js}" defer></script>
+    <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+<header th:fragment="nav" class="border-b border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-8 gap-y-2 px-4 py-3">
+        <a th:href="@{/summary}" class="text-lg font-semibold text-emerald-800">Finances</a>
+        <nav class="flex flex-wrap gap-1 text-sm">
+            <a th:each="item : ${ {'summary','revenues','earnings','expenses','investments','backup'} }"
+               th:href="@{/{p}(p=${item},year=${year})}" th:text="${#strings.capitalize(item)}"
+               th:classappend="${item == active} ? 'bg-emerald-50 text-emerald-800 font-medium' : 'text-slate-600 hover:bg-slate-100'"
+               class="rounded-md px-3 py-1.5">Page</a>
+        </nav>
+        <div th:if="${year != null}" class="year-nav">
+            <a th:href="@{/{p}(p=${active},year=${year - 1})}" class="year-btn" aria-label="Previous year">&#8592;</a>
+            <span class="year-label" th:text="${year}">2026</span>
+            <a th:href="@{/{p}(p=${active},year=${year + 1})}" class="year-btn" aria-label="Next year">&#8594;</a>
+        </div>
+    </div>
+</header>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Earnings')}"></head>
+<body class="bg-slate-50 text-slate-800">
+<header th:replace="~{fragments/layout :: nav}"></header>
+<main class="mx-auto max-w-7xl space-y-6 px-4 py-6">
+
+    <div class="quarter-tabs">
+        <a th:each="q : ${quarters}"
+           th:href="@{/{p}(p=${active},year=${year},quarter=${q})}"
+           th:text="${'Q' + q}"
+           th:classappend="${q == quarter} ? 'quarter-tab-active'"
+           th:aria-current="${q == quarter} ? 'page'"
+           class="quarter-tab">Q1</a>
+    </div>
+
+    <section class="card overflow-x-auto">
+        <table class="grid-table">
+            <thead>
+            <tr>
+                <th th:each="col : ${grid.columns()}" colspan="3" th:text="${col.label()}">Month</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="i : ${grid.rowCount() > 0 ? #numbers.sequence(0, grid.rowCount() - 1) : {}}">
+                <th:block th:each="col : ${grid.columns()}" th:with="item=${col.itemAt(i)}">
+                    <td th:text="${item?.description}"></td>
+                    <td class="num" th:text="${item != null} ? ${@fmt.money(item.amount)} : ''"></td>
+                    <td class="row-actions">
+                        <th:block th:if="${item != null}">
+                            <button class="icon-btn text-rose-700" title="Delete" hx-confirm="Delete this earning?"
+                                    th:attr="hx-delete=@{/earnings/{id}(id=${item.id})}">&times;</button>
+                        </th:block>
+                    </td>
+                </th:block>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr class="font-semibold">
+                <th:block th:each="col : ${grid.columns()}">
+                    <td>Total</td>
+                    <td class="num" th:text="${@fmt.money(col.total())}">0</td>
+                    <td></td>
+                </th:block>
+            </tr>
+            </tfoot>
+        </table>
+    </section>
+
+    <section class="card p-4">
+        <h2 class="section-heading mb-3">Add earning</h2>
+        <form hx-post="/earnings" class="flex flex-wrap items-end gap-3">
+            <input type="hidden" name="year" th:value="${year}">
+            <label class="field">Month
+                <select name="month" class="input">
+                    <option th:each="col : ${grid.columns()}" th:value="${col.month()}" th:text="${col.label()}">January</option>
+                </select>
+            </label>
+            <label class="field">Description
+                <input name="description" maxlength="120" required class="input" placeholder="Net bonus, interest…">
+            </label>
+            <label class="field">Amount
+                <input name="amount" type="number" step="0.01" required class="input">
+            </label>
+            <button class="btn btn-primary">Add</button>
+        </form>
+        <p class="mt-2 text-xs text-slate-500">Earnings are added to net revenue for the month. Each month can have any number of lines.</p>
+    </section>
+
+</main>
+</body>
+</html>

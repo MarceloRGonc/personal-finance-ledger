@@ -1,0 +1,17 @@
+services:
+  finances:
+    build: .
+    image: personal-finance-ledger:1.0.0
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./data:/app/data
+    user: "${FINANCES_UID:-10001}:${FINANCES_GID:-10001}"
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped

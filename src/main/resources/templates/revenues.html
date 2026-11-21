@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Revenues')}"></head>
+<body class="bg-slate-50 text-slate-800">
+<header th:replace="~{fragments/layout :: nav}"></header>
+<main class="mx-auto max-w-7xl space-y-6 px-4 py-6">
+
+    <section class="card">
+        <div class="p-4 pb-0">
+            <h2 class="section-heading">Monthly revenue</h2>
+            <p class="text-xs text-slate-500 mt-1">Earning columns add to net revenue; deduction columns subtract from it. Monthly earnings lines are on the Earnings page.</p>
+        </div>
+        <div class="table-scroll mt-3">
+            <table class="grid-table">
+                <thead>
+                <tr>
+                    <th class="text-left col-fixed">Month</th>
+                    <th th:each="f : ${grid.fields()}">
+                        <span th:text="${f.label}">Field</span>
+                        <span class="field-kind" th:text="${f.kind}">KIND</span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="m : ${months}">
+                    <td class="col-fixed" th:text="${@fmt.monthName(m)}">January</td>
+                    <td th:each="f : ${grid.fields()}" th:with="value=${grid.byMonth().get(m)?.get(f.code)}" class="num">
+                        <input type="number" step="0.01" name="amount" class="cell-input" th:value="${@fmt.plain(value)}"
+                               th:attr="hx-put=@{/revenues/{y}/{m}/{c}(y=${year},m=${m},c=${f.code})}" hx-trigger="change">
+                    </td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr class="font-semibold">
+                    <td class="col-fixed">Total</td>
+                    <td th:each="f : ${grid.fields()}" class="num" th:text="${@fmt.money(grid.totals().get(f.code))}">0</td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>

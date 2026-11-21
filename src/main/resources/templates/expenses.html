@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Expenses')}"></head>
+<body class="bg-slate-50 text-slate-800">
+<header th:replace="~{fragments/layout :: nav}"></header>
+<main class="mx-auto max-w-7xl space-y-6 px-4 py-6">
+
+    <div class="quarter-tabs">
+        <a th:each="q : ${quarters}"
+           th:href="@{/{p}(p=${active},year=${year},quarter=${q})}"
+           th:text="${'Q' + q}"
+           th:classappend="${q == quarter} ? 'quarter-tab-active'"
+           th:aria-current="${q == quarter} ? 'page'"
+           class="quarter-tab">Q1</a>
+    </div>
+
+    <section class="card overflow-x-auto">
+        <table class="grid-table">
+            <thead>
+            <tr>
+                <th th:each="col : ${grid.columns()}" colspan="3" th:text="${col.label()}">Month</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="i : ${grid.rowCount() > 0 ? #numbers.sequence(0, grid.rowCount() - 1) : {}}">
+                <th:block th:each="col : ${grid.columns()}" th:with="item=${col.itemAt(i)}">
+                    <td th:text="${item?.description}"
+                        th:classappend="${item != null and !item.counted} ? 'text-slate-400 line-through'"></td>
+                    <td class="num" th:text="${item != null} ? ${@fmt.money(item.amount)} : ''"
+                        th:classappend="${item != null and !item.counted} ? 'text-slate-400 line-through'"></td>
+                    <td class="row-actions">
+                        <th:block th:if="${item != null}">
+                            <button class="icon-btn" title="Include or exclude from total"
+                                    th:attr="hx-post=@{/expenses/{id}/toggle(id=${item.id})}"
+                                    th:text="${item.counted} ? '∑' : '∅'">∑</button>
+                            <button class="icon-btn text-rose-700" title="Delete"
+                                    hx-confirm="Delete this expense?"
+                                    th:attr="hx-delete=@{/expenses/{id}(id=${item.id})}">&times;</button>
+                        </th:block>
+                    </td>
+                </th:block>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr class="font-semibold">
+                <th:block th:each="col : ${grid.columns()}">
+                    <td>Total</td>
+                    <td class="num" th:text="${@fmt.money(col.total())}">0</td>
+                    <td></td>
+                </th:block>
+            </tr>
+            </tfoot>
+        </table>
+    </section>
+
+    <section class="card p-4">
+        <h2 class="section-heading mb-3">Add expense</h2>
+        <form hx-post="/expenses" class="flex flex-wrap items-end gap-3">
+            <input type="hidden" name="year" th:value="${year}">
+            <label class="field">Month
+                <select name="month" class="input">
+                    <option th:each="col : ${grid.columns()}" th:value="${col.month()}" th:text="${col.label()}">January</option>
+                </select>
+            </label>
+            <label class="field">Description<input name="description" maxlength="120" required class="input"></label>
+            <label class="field">Amount<input name="amount" type="number" step="0.01" required class="input"></label>
+            <button class="btn btn-primary">Add</button>
+        </form>
+        <p class="mt-2 text-xs text-slate-500">∅ marks entries excluded from the monthly total.</p>
+    </section>
+
+    <section class="card p-4">
+        <h2 class="section-heading mb-3">Paste a month</h2>
+
+        <p th:if="${message}" th:text="${message}" class="mb-3 text-sm text-slate-700"></p>
+
+        <div th:if="${pasteErrors}" class="alert-error">
+            <p class="font-semibold mb-1">Nothing was saved — fix these lines and paste again:</p>
+            <ul class="list-disc pl-5 space-y-1">
+                <li th:each="error : ${pasteErrors}" th:text="${error}">Line 1</li>
+            </ul>
+        </div>
+
+        <form method="post" action="/expenses/paste/preview" class="space-y-3">
+            <input type="hidden" name="year" th:value="${year}">
+            <div class="flex flex-wrap gap-3">
+                <label class="field">Month
+                    <select name="month" class="input">
+                        <option th:each="col : ${grid.columns()}" th:value="${col.month()}" th:text="${col.label()}"
+                                th:selected="${col.month() == pasteMonth}">January</option>
+                    </select>
+                </label>
+                <label class="field-inline">
+                    <input type="checkbox" name="replace" value="true" th:checked="${pasteReplace}">
+                    Replace existing expenses for this month
+                </label>
+            </div>
+            <textarea name="text" rows="8" class="input w-full"
+                      placeholder="Rent;1200,00&#10;Groceries;345.50"
+                      th:text="${pasteText}"></textarea>
+            <button class="btn btn-primary">Preview</button>
+        </form>
+
+        <div th:if="${pasteRows}" class="preview-panel">
+            <p class="font-semibold text-slate-800 mb-3">
+                Preview — <span th:text="${#lists.size(pasteRows)}">0</span> expenses for <span th:text="${pasteMonthLabel}">January</span>
+            </p>
+            <table class="grid-table w-full">
+                <thead><tr><th class="text-left">Description</th><th>Amount</th></tr></thead>
+                <tbody>
+                <tr th:each="row : ${pasteRows}">
+                    <td th:text="${row.description()}">Rent</td>
+                    <td class="num" th:text="${@fmt.money(row.amount())}">0,00</td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr class="font-semibold">
+                    <td>Total</td>
+                    <td class="num" th:text="${@fmt.money(pasteTotal)}">0,00</td>
+                </tr>
+                </tfoot>
+            </table>
+            <form method="post" action="/expenses/paste" class="flex flex-wrap items-center gap-3 mt-3">
+                <input type="hidden" name="year" th:value="${year}">
+                <input type="hidden" name="month" th:value="${pasteMonth}">
+                <input type="hidden" name="text" th:value="${pasteText}">
+                <input type="hidden" name="replace" th:value="${pasteReplace}">
+                <button class="btn btn-primary">Confirm and save</button>
+                <span class="text-xs text-slate-500"
+                      th:text="${pasteReplace} ? 'Replaces existing expenses for this month' : 'Added after existing expenses'"></span>
+            </form>
+        </div>
+
+        <p class="mt-3 text-xs text-slate-500">One expense per line: description then amount, separated by a tab or semicolon. Copy two columns from Excel or type manually. Both <code>1.200,50</code> and <code>1200.50</code> are accepted. A header row is skipped automatically.</p>
+    </section>
+
+</main>
+</body>
+</html>

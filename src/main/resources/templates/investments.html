@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head th:replace="~{fragments/layout :: head('Investments')}"></head>
+<body class="bg-slate-50 text-slate-800">
+<header th:replace="~{fragments/layout :: nav}"></header>
+<main class="mx-auto max-w-7xl space-y-6 px-4 py-6">
+
+    <section class="card">
+        <div class="p-4 pb-0">
+            <h2 class="section-heading">Monthly contributions</h2>
+            <p class="text-xs text-slate-500 mt-1">Hover a column header to access move and delete controls.</p>
+        </div>
+        <div class="table-scroll mt-3">
+            <table class="grid-table">
+                <thead>
+                <tr>
+                    <th class="text-left col-fixed">Month</th>
+                    <th th:each="a : ${grid.assets()}" class="asset-th">
+                        <span th:text="${a.name}">Asset</span>
+                        <span class="asset-controls">
+                            <button type="button" class="icon-btn" title="Move left"
+                                    th:attr="hx-post=@{/investments/assets/{id}/up(id=${a.id})}">&larr;</button>
+                            <button type="button" class="icon-btn" title="Move right"
+                                    th:attr="hx-post=@{/investments/assets/{id}/down(id=${a.id})}">&rarr;</button>
+                            <button type="button" class="icon-btn text-xs text-rose-700"
+                                    th:attr="hx-delete=@{/investments/assets/{id}(id=${a.id},fromYear=${year})}">Del</button>
+                        </span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr class="text-slate-500">
+                    <td class="col-fixed">Opening value</td>
+                    <td th:each="a : ${grid.assets()}" class="num">
+                        <input type="number" step="0.01" name="amount" class="cell-input" th:value="${@fmt.plain(grid.openingValues().get(a.id))}"
+                               th:attr="hx-put=@{/investments/openings/{y}/{id}(y=${year},id=${a.id})}" hx-trigger="change">
+                    </td>
+                </tr>
+                <tr th:each="m : ${months}">
+                    <td class="col-fixed" th:text="${@fmt.monthName(m)}">January</td>
+                    <td th:each="a : ${grid.assets()}" class="num" th:with="value=${grid.byMonth().get(m)?.get(a.id)}">
+                        <input type="number" step="0.01" name="amount" class="cell-input" th:value="${@fmt.plain(value)}"
+                               th:attr="hx-put=@{/investments/contributions/{y}/{m}/{id}(y=${year},m=${m},id=${a.id})}" hx-trigger="change">
+                    </td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr class="font-semibold">
+                    <td class="col-fixed">Year total</td>
+                    <td th:each="a : ${grid.assets()}" class="num" th:text="${@fmt.money(grid.totals().get(a.id))}">0</td>
+                </tr>
+                <tr>
+                    <td class="col-fixed text-slate-500">All investments</td>
+                    <td class="num font-semibold" th:text="${@fmt.money(grid.grandTotal())}">0</td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div th:if="${!grid.closedAssets().isEmpty()}" class="form-panel">
+            <p class="text-xs text-slate-500 mb-2">Deleted investments</p>
+            <div class="flex flex-wrap gap-2">
+                <span th:each="a : ${grid.closedAssets()}" class="closed-asset-pill">
+                    <span th:text="${a.name + ' (from ' + a.closedFromYear + ')'}">Crypto (from 2027)</span>
+                    <button type="button" class="btn btn-small"
+                            th:attr="hx-put=@{/investments/assets/{id}/reopen(id=${a.id})}">Reopen</button>
+                    <button type="button" class="icon-btn text-rose-700" title="Remove permanently"
+                            hx-confirm="Permanently remove this investment with all its history? This cannot be undone."
+                            th:attr="hx-delete=@{/investments/assets/{id}/permanent(id=${a.id})}">&times;</button>
+                </span>
+            </div>
+        </div>
+
+        <div class="form-panel">
+            <p class="section-title mb-2">Add investment</p>
+            <form hx-post="/investments/assets" class="flex flex-wrap items-end gap-3">
+                <label class="field">Name<input name="name" maxlength="60" required class="input" placeholder="e.g. MSCI World"></label>
+                <label class="field">Tags<input name="tags" maxlength="200" class="input" placeholder="CHART_PORTFOLIO,CHART_ETFS"></label>
+                <button class="btn btn-primary">Add</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="card">
+        <div class="p-4 pb-0">
+            <h2 class="section-heading">Sales in <span th:text="${year}">2026</span></h2>
+        </div>
+        <div class="table-scroll mt-3">
+            <table class="grid-table">
+                <thead>
+                <tr>
+                    <th class="text-left col-fixed">Month</th>
+                    <th class="text-left">Investment</th>
+                    <th>Sold for</th>
+                    <th>Cost removed</th>
+                    <th>Profit</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${grid.sales()}">
+                    <td class="col-fixed" th:text="${@fmt.monthName(s.month())}">January</td>
+                    <td th:text="${s.assetName()}">MSCI World</td>
+                    <td class="num" th:text="${@fmt.money(s.proceeds())}">0</td>
+                    <td class="num" th:text="${@fmt.money(s.cost())}">0</td>
+                    <td class="num" th:text="${@fmt.money(s.profit())}">0</td>
+                    <td>
+                        <button type="button" class="icon-btn text-rose-700"
+                                th:attr="hx-delete=@{/investments/sales/{id}(id=${s.id()})}">Delete</button>
+                    </td>
+                </tr>
+                <tr th:if="${grid.sales().isEmpty()}">
+                    <td colspan="6" class="text-slate-400">No sales recorded for this year.</td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr class="font-semibold">
+                    <td class="col-fixed" colspan="2">Total</td>
+                    <td class="num" th:text="${@fmt.money(grid.soldProceeds())}">0</td>
+                    <td class="num" th:text="${@fmt.money(grid.soldCost())}">0</td>
+                    <td class="num" th:text="${@fmt.money(grid.realizedProfit())}">0</td>
+                    <td></td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+        <div class="form-panel">
+            <p class="section-title mb-2">Record a sale</p>
+            <form hx-post="/investments/sales" class="flex flex-wrap items-end gap-3">
+                <input type="hidden" name="year" th:value="${year}">
+                <label class="field">Month
+                    <select name="month" class="input">
+                        <option th:each="m : ${months}" th:value="${m}" th:text="${@fmt.monthName(m)}">January</option>
+                    </select>
+                </label>
+                <label class="field">Investment
+                    <select name="assetId" class="input">
+                        <option th:each="a : ${grid.assets()}" th:value="${a.id}" th:text="${a.name}">MSCI World</option>
+                        <option th:each="a : ${grid.closedAssets()}" th:value="${a.id}" th:text="${a.name + ' (deleted)'}">Crypto (deleted)</option>
+                    </select>
+                </label>
+                <label class="field">Sold for<input name="proceeds" type="number" step="0.01" min="0" required class="input"></label>
+                <label class="field">Bought for (cost)<input name="cost" type="number" step="0.01" min="0" required class="input"></label>
+                <button class="btn btn-primary">Record sale</button>
+            </form>
+            <p class="text-xs text-slate-500 mt-2">The cost leaves the invested amount; proceeds count as cash in that month. Profit is proceeds minus cost.</p>
+        </div>
+    </section>
+
+    <section class="card overflow-x-auto">
+        <div class="p-4 pb-0">
+            <h2 class="section-heading">Portfolio</h2>
+            <p class="text-xs text-slate-500 mt-1">Use ↑ ↓ to reorder. Tags CHART_PORTFOLIO and CHART_ETFS control which chart an investment appears in.</p>
+        </div>
+        <table class="grid-table mt-3">
+            <thead>
+            <tr>
+                <th class="text-left">Investment</th>
+                <th>Opening</th>
+                <th>Contributed</th>
+                <th>Sold (cost)</th>
+                <th>Value</th>
+                <th class="text-left">Tags</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="a : ${portfolio.assets()}">
+                <td class="whitespace-nowrap">
+                    <button type="button" class="icon-btn" title="Move up"
+                            th:attr="hx-post=@{/investments/assets/{id}/up(id=${a.id()})}">&uarr;</button>
+                    <button type="button" class="icon-btn" title="Move down"
+                            th:attr="hx-post=@{/investments/assets/{id}/down(id=${a.id()})}">&darr;</button>
+                    <span th:text="${a.name()}">Asset</span>
+                    <button type="button" class="icon-btn text-rose-700" title="Remove permanently"
+                            hx-confirm="Permanently remove this investment with all its history? This cannot be undone."
+                            th:attr="hx-delete=@{/investments/assets/{id}/permanent(id=${a.id()})}">&times;</button>
+                </td>
+                <td class="num" th:text="${@fmt.money(a.baseAmount())}">0</td>
+                <td class="num" th:text="${@fmt.money(a.contributed())}">0</td>
+                <td class="num" th:text="${@fmt.money(a.sold())}">0</td>
+                <td class="num" th:text="${@fmt.money(a.value())}">0</td>
+                <td>
+                    <input class="cell-input tags-input" name="tags"
+                           th:value="${#strings.arrayJoin(a.tags().toArray(), ',')}"
+                           th:attr="hx-put=@{/investments/assets/{id}/tags(id=${a.id()})}" hx-trigger="change">
+                </td>
+            </tr>
+            <tr th:each="loan : ${loans}">
+                <td th:text="${'Loan: ' + loan.name()}">Loan</td><td></td><td></td><td></td>
+                <td class="num" th:text="${@fmt.money(loan.remaining())}">0</td><td></td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr class="font-semibold" th:each="t : ${portfolio.totals()}">
+                <td th:text="${@fmt.label(t.key)}">Total</td><td colspan="4"></td>
+                <td class="num" th:text="${@fmt.money(t.value)}">0</td>
+            </tr>
+            </tfoot>
+        </table>
+    </section>
+
+    <section class="grid gap-6 lg:grid-cols-2">
+        <div class="card p-4">
+            <h2 class="section-heading mb-3">Portfolio allocation</h2>
+            <div class="h-64"><canvas th:attr="data-chart-url=@{/api/investments/{y}/charts/portfolio(y=${year})}" data-chart-type="pie"></canvas></div>
+        </div>
+        <div class="card p-4">
+            <h2 class="section-heading mb-3">ETFs breakdown</h2>
+            <div class="h-64"><canvas th:attr="data-chart-url=@{/api/investments/{y}/charts/etfs(y=${year})}" data-chart-type="pie"></canvas></div>
+        </div>
+    </section>
+
+    <section th:if="${!loans.isEmpty()}" class="grid gap-6 lg:grid-cols-3">
+        <div th:each="loan : ${loans}" class="card overflow-x-auto">
+            <div class="p-4 pb-0">
+                <h2 class="section-heading" th:text="${loan.name()}">Loan</h2>
+            </div>
+            <table class="grid-table mt-3">
+                <tbody>
+                <tr><td>Principal</td><td class="num" th:text="${@fmt.money(loan.principal())}">0</td></tr>
+                <tr th:if="${loan.opening() != null}"><td>Opening balance</td><td class="num" th:text="${@fmt.money(loan.opening())}">0</td></tr>
+                <tr th:each="p : ${loan.payments()}">
+                    <td th:text="${p.label}">Payment</td>
+                    <td class="num" th:text="${@fmt.money(p.amount)}">0</td>
+                </tr>
+                </tbody>
+                <tfoot><tr class="font-semibold"><td>Remaining</td><td class="num" th:text="${@fmt.money(loan.remaining())}">0</td></tr></tfoot>
+            </table>
+        </div>
+    </section>
+
+</main>
+</body>
+</html>

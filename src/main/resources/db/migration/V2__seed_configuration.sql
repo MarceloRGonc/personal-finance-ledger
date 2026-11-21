@@ -1,0 +1,40 @@
+INSERT INTO revenue_field (code, label, kind, sort_order) VALUES
+    ('GROSS_SALARY',   'Gross Salary',   'EARNING',   1),
+    ('GROSS_BONUS',    'Gross Bonus',    'EARNING',   2),
+    ('FOOD_ALLOWANCE', 'Food Allowance', 'EARNING',   3),
+    ('IRS',            'IRS',            'DEDUCTION', 4),
+    ('SS',             'SS',             'DEDUCTION', 5),
+    ('OTHER_TAXES',    'Other Taxes',    'DEDUCTION', 6);
+
+INSERT INTO formula_rule (code, scope, expression, description, sort_order) VALUES
+    ('GROSS_REVENUE', 'MONTH',
+     '#rev[''GROSS_SALARY''] + #rev[''GROSS_BONUS'']',
+     'Gross salary plus gross bonus', 1),
+    ('NET_REVENUE', 'MONTH',
+     '#revEarnings + #earningLines - #revDeductions',
+     'EARNING revenue columns plus the monthly earnings lines, minus DEDUCTION columns', 2),
+    ('INVESTMENTS', 'MONTH',
+     '#invTotal',
+     'Sum of all investment contributions for the month', 3),
+    ('EXPENSES', 'MONTH',
+     '#expenses',
+     'Sum of counted expenses for the month', 4),
+    ('MONTH_BALANCE', 'MONTH',
+     '#NET_REVENUE - #INVESTMENTS - #EXPENSES',
+     'Net revenue minus investments minus expenses', 5),
+
+    ('GROSS_ANNUAL_INCOME', 'YEAR', '#YEAR_GROSS_REVENUE', 'Sum of monthly gross revenue', 1),
+    ('NET_ANNUAL_INCOME',   'YEAR', '#YEAR_NET_REVENUE',   'Sum of monthly net revenue', 2),
+    ('ANNUAL_INVESTED',     'YEAR', '#YEAR_INVESTMENTS',   'Sum of monthly investment contributions', 3),
+    ('ANNUAL_EXPENSES',     'YEAR', '#YEAR_EXPENSES',      'Sum of monthly counted expenses', 4),
+    ('TOTAL_LIQUIDO', 'YEAR',
+     '#prev[''NET_VALUE''] + #NET_ANNUAL_INCOME - #ANNUAL_INVESTED - #ANNUAL_EXPENSES',
+     'Previous year net value plus net income minus investments and expenses', 5),
+    ('CURRENT_BALANCE', 'YEAR',
+     '#prev[''NET_VALUE''] + #prev[''INVESTED''] + #NET_ANNUAL_INCOME - #ANNUAL_EXPENSES',
+     'Previous year net value and invested plus net income minus expenses', 6),
+    ('BANK_TOTAL',      'YEAR', '#bankTotal',                      'Sum of all bank account balances', 7),
+    ('BANK_DIFFERENCE', 'YEAR', '#BANK_TOTAL - #TOTAL_LIQUIDO',    'Bank balances minus Total Liquido', 8),
+
+    ('INVESTED_TOTAL', 'PORTFOLIO', '#holdingsTotal + #loansRemaining', 'Investment assets plus remaining loan balance', 1),
+    ('ETF_SUBTOTAL',   'PORTFOLIO', '#tags[''CHART_ETFS'']',            'Total value of assets tagged CHART_ETFS', 2);

@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .card { @apply rounded-xl border border-slate-200 bg-white shadow-sm; }
+  .section-heading { @apply text-base font-semibold tracking-tight text-slate-800; }
+  .section-title { @apply text-sm font-semibold text-slate-500; }
+  .hint { @apply text-xs text-slate-500; }
+
+  .grid-table { @apply w-full text-sm; }
+  .grid-table th { @apply whitespace-nowrap border-b border-slate-200 bg-slate-50 px-3 py-2 text-right text-xs font-semibold text-slate-500; }
+  .grid-table td { @apply border-b border-slate-100 px-3 py-1.5; }
+  .grid-table tbody tr:hover td { @apply bg-slate-50; }
+  .grid-table tfoot td { @apply border-t border-slate-200 bg-slate-50; }
+  .num { @apply text-right tabular-nums; }
+  .num-positive { @apply text-emerald-700; }
+  .num-negative { @apply text-rose-700; }
+  .delta { @apply ml-1 text-[11px]; }
+  .delta-percent { @apply ml-0.5 text-[11px] text-slate-400; }
+  .row-actions { @apply whitespace-nowrap text-right text-[11px]; }
+  .field-kind { @apply block text-[10px] font-normal text-slate-400; }
+
+  .table-scroll { @apply overflow-x-auto; }
+  .table-scroll table { @apply border-separate border-spacing-0; }
+  .table-scroll .col-fixed { @apply sticky left-0 z-10 border-r border-r-slate-200 bg-white text-left; }
+  .table-scroll thead .col-fixed,
+  .table-scroll tfoot .col-fixed { @apply bg-slate-50; }
+
+  .stat-label { @apply mb-1 text-xs font-medium text-slate-500; }
+  .stat-value { @apply text-2xl font-bold leading-tight tabular-nums text-slate-900; }
+
+  .cell-input { @apply w-28 rounded border border-transparent bg-transparent px-1 py-0.5 text-right tabular-nums hover:border-slate-300 focus:border-emerald-600 focus:bg-white focus:outline-none; }
+  .tags-input { @apply w-36 text-left; }
+  .input { @apply rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm focus:border-emerald-600 focus:outline-none focus:ring-1 focus:ring-emerald-600; }
+  .field { @apply flex flex-col gap-1 text-xs font-medium text-slate-600; }
+  .field-inline { @apply flex items-center gap-2 self-end pb-1.5 text-sm; }
+  .form-panel { @apply border-t border-slate-200 p-4; }
+
+  .btn { @apply inline-flex items-center rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50; }
+  .btn-primary { @apply border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-800; }
+  .btn-small { @apply px-1.5 py-0.5 text-xs; }
+  .icon-btn { @apply rounded px-1.5 py-0.5 text-slate-500 hover:bg-slate-100; }
+
+  .asset-th { @apply min-w-[7rem]; }
+  .asset-controls { @apply invisible mt-1 flex justify-end gap-1 font-normal; }
+  th:hover .asset-controls,
+  th:focus-within .asset-controls { @apply visible; }
+  @media (hover: none) {
+    .asset-controls { @apply visible; }
+  }
+  .closed-asset-pill { @apply inline-flex items-center gap-1.5 rounded-md bg-slate-100 py-0.5 pl-2.5 pr-2 text-xs text-slate-600; }
+
+  .quarter-tabs { @apply flex gap-1.5; }
+  .quarter-tab { @apply rounded-md border border-transparent px-3.5 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100; }
+  .quarter-tab-active { @apply border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-700; }
+
+  .year-nav { @apply flex items-center gap-1.5 tabular-nums; }
+  .year-label { @apply min-w-[3rem] text-center text-lg font-bold text-slate-900; }
+  .year-btn { @apply inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white text-sm text-slate-600 hover:bg-slate-100; }
+
+  .preview-panel { @apply mt-3 rounded-lg border border-slate-200 bg-slate-50 p-4; }
+  .alert-error { @apply mb-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700; }
+}

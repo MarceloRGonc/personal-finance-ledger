@@ -3,6 +3,7 @@ package com.finances.web;
 import com.finances.common.Money;
 import com.finances.common.Months;
 import com.finances.common.Periods;
+import com.finances.common.Quarters;
 import com.finances.service.ExpensePasteException;
 import com.finances.service.ExpenseService;
 import com.finances.service.PastedExpense;
@@ -35,11 +36,13 @@ class ExpenseController {
     }
 
     @GetMapping("/expenses")
-    String page(@RequestParam(required = false) Integer year, @RequestParam(defaultValue = "1") int quarter, Model model) {
+    String page(@RequestParam(required = false) Integer year, @RequestParam(name = "quarter", required = false) Integer requestedQuarter, Model model) {
         var selected = Periods.yearOrCurrent(year);
         model.addAttribute("active", "expenses");
         model.addAttribute("year", selected);
+        var quarter = QuarterSelection.quarter(selected, requestedQuarter);
         model.addAttribute("quarter", quarter);
+        model.addAttribute("currentMonth", QuarterSelection.currentMonth(selected));
         model.addAttribute("quarters", IntStream.rangeClosed(1, ExpenseService.QUARTERS).boxed().toList());
         model.addAttribute("grid", expenses.grid(selected, quarter));
         return "expenses";
@@ -92,8 +95,7 @@ class ExpenseController {
     }
 
     private static String pageFor(int year, int month) {
-        var quarter = (month - 1) / 3 + 1;
-        return "redirect:/expenses?year=" + year + "&quarter=" + quarter;
+        return "redirect:/expenses?year=" + year + "&quarter=" + Quarters.ofMonth(month);
     }
 
     record PasteForm(@Min(1970) @Max(2200) int year, @Min(1) @Max(12) int month,

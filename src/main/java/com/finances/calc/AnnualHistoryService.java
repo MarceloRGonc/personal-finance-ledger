@@ -1,6 +1,6 @@
 package com.finances.calc;
 
-import com.finances.common.Periods;
+import com.finances.config.FinanceProperties;
 import com.finances.domain.AnnualFigure;
 import com.finances.domain.AnnualMetric;
 import com.finances.repository.AnnualFigureRepository;
@@ -28,14 +28,17 @@ public class AnnualHistoryService {
 
     private final AnnualFigureRepository figures;
     private final YearOverviewService overviews;
+    private final int baseYear;
 
-    public AnnualHistoryService(AnnualFigureRepository figures, YearOverviewService overviews) {
+    public AnnualHistoryService(AnnualFigureRepository figures, YearOverviewService overviews,
+                                FinanceProperties properties) {
         this.figures = figures;
         this.overviews = overviews;
+        this.baseYear = properties.baseYear();
     }
 
     public AnnualHistory history(int selectedYear) {
-        var last = Math.max(selectedYear, Periods.BASE_YEAR);
+        var last = Math.max(selectedYear, baseYear);
         var years = new ArrayList<Integer>();
         var rows = new EnumMap<AnnualMetric, Map<Integer, BigDecimal>>(AnnualMetric.class);
         for (var metric : AnnualMetric.values()) {
@@ -43,9 +46,9 @@ public class AnnualHistoryService {
         }
         Map<String, BigDecimal> previous = Map.of();
         YearOverview selected = null;
-        for (int year = Periods.BASE_YEAR; year <= last; year++) {
+        for (int year = baseYear; year <= last; year++) {
             var overview = overviews.overview(year, previous);
-            var values = year == Periods.BASE_YEAR
+            var values = year == baseYear
                     ? typedFigures(year)
                     : calculatedFigures(overview, previous);
             final int current = year;
@@ -57,7 +60,7 @@ public class AnnualHistoryService {
             }
         }
         var overview = selected != null ? selected : overviews.overview(selectedYear, Map.of());
-        return new AnnualHistory(Periods.BASE_YEAR, List.copyOf(years), rows, overview);
+        return new AnnualHistory(baseYear, List.copyOf(years), rows, overview);
     }
 
     public List<YearComparison> comparisons(AnnualHistory history) {

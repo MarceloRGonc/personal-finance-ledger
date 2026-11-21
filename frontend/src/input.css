@@ -23,6 +23,7 @@
 
   .table-scroll { @apply overflow-x-auto; }
   .table-scroll table { @apply border-separate border-spacing-0; }
+  .grid-table th.col-current { @apply bg-emerald-50 text-emerald-800; }
   .table-scroll .col-fixed { @apply sticky left-0 z-10 border-r border-r-slate-200 bg-white text-left; }
   .table-scroll thead .col-fixed,
   .table-scroll tfoot .col-fixed { @apply bg-slate-50; }
@@ -55,9 +56,10 @@
   .quarter-tab { @apply rounded-md border border-transparent px-3.5 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100; }
   .quarter-tab-active { @apply border-emerald-700 bg-emerald-700 text-white hover:bg-emerald-700; }
 
-  .year-nav { @apply flex items-center gap-1.5 tabular-nums; }
+  .year-nav { @apply ml-auto flex items-center gap-1.5 tabular-nums; }
   .year-label { @apply min-w-[3rem] text-center text-lg font-bold text-slate-900; }
   .year-btn { @apply inline-flex h-7 w-7 items-center justify-center rounded-md border border-slate-200 bg-white text-sm text-slate-600 hover:bg-slate-100; }
+  .year-btn-disabled { @apply cursor-not-allowed border-slate-100 text-slate-300 hover:bg-white; }
 
   .preview-panel { @apply mt-3 rounded-lg border border-slate-200 bg-slate-50 p-4; }
   .alert-error { @apply mb-3 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700; }

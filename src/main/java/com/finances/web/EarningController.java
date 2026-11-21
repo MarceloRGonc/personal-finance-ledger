@@ -30,11 +30,13 @@ class EarningController {
     }
 
     @GetMapping("/earnings")
-    String page(@RequestParam(required = false) Integer year, @RequestParam(defaultValue = "1") int quarter, Model model) {
+    String page(@RequestParam(required = false) Integer year, @RequestParam(name = "quarter", required = false) Integer requestedQuarter, Model model) {
         var selected = Periods.yearOrCurrent(year);
         model.addAttribute("active", "earnings");
         model.addAttribute("year", selected);
+        var quarter = QuarterSelection.quarter(selected, requestedQuarter);
         model.addAttribute("quarter", quarter);
+        model.addAttribute("currentMonth", QuarterSelection.currentMonth(selected));
         model.addAttribute("quarters", IntStream.rangeClosed(1, RevenueLineService.QUARTERS).boxed().toList());
         model.addAttribute("grid", lines.grid(selected, quarter));
         return "earnings";

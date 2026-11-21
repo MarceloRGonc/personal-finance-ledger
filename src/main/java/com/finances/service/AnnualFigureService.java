@@ -1,7 +1,7 @@
 package com.finances.service;
 
 import com.finances.common.Money;
-import com.finances.common.Periods;
+import com.finances.config.FinanceProperties;
 import com.finances.domain.AnnualFigure;
 import com.finances.domain.AnnualMetric;
 import com.finances.repository.AnnualFigureRepository;
@@ -14,14 +14,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class AnnualFigureService {
 
     private final AnnualFigureRepository figures;
+    private final int baseYear;
 
-    public AnnualFigureService(AnnualFigureRepository figures) {
+    public AnnualFigureService(AnnualFigureRepository figures, FinanceProperties properties) {
         this.figures = figures;
+        this.baseYear = properties.baseYear();
     }
 
     public void set(int year, AnnualMetric metric, BigDecimal amount) {
-        if (year != Periods.BASE_YEAR) {
-            throw new IllegalArgumentException("Only " + Periods.BASE_YEAR + " is typed in; later years are calculated");
+        if (year != baseYear) {
+            throw new IllegalArgumentException("Only " + baseYear + " is typed in; later years are calculated");
         }
         var existing = figures.findByYearAndMetric(year, metric.name());
         if (amount == null) {

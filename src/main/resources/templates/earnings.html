@@ -18,7 +18,8 @@
         <table class="grid-table">
             <thead>
             <tr>
-                <th th:each="col : ${grid.columns()}" colspan="3" th:text="${col.label()}">Month</th>
+                <th th:each="col : ${grid.columns()}" colspan="3" th:text="${col.label()}"
+                    th:classappend="${col.month() == currentMonth} ? 'col-current'">Month</th>
             </tr>
             </thead>
             <tbody>
@@ -53,7 +54,8 @@
             <input type="hidden" name="year" th:value="${year}">
             <label class="field">Month
                 <select name="month" class="input">
-                    <option th:each="col : ${grid.columns()}" th:value="${col.month()}" th:text="${col.label()}">January</option>
+                    <option th:each="col : ${grid.columns()}" th:value="${col.month()}" th:text="${col.label()}"
+                            th:selected="${col.month() == currentMonth}">January</option>
                 </select>
             </label>
             <label class="field">Description

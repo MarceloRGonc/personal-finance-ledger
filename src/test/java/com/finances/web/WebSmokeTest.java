@@ -1,6 +1,8 @@
 package com.finances.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,6 +13,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.finances.IntegrationTestSupport;
+import com.finances.common.Months;
+import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -99,6 +103,38 @@ class WebSmokeTest extends IntegrationTestSupport {
         var id = jdbc.queryForObject("SELECT id FROM investment_asset WHERE name = 'MSCI Japan'", Long.class);
         mvc.perform(put("/investments/openings/2026/" + id).param("amount", "42")).andExpect(status().isOk());
         mvc.perform(put("/investments/contributions/2026/2/" + id).param("amount", "8")).andExpect(status().isOk());
+    }
+
+    @Test
+    void yearNavigationStopsAtTheBaseYear() throws Exception {
+        mvc.perform(get("/summary").param("year", "2023"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("year=2022"))))
+                .andExpect(content().string(containsString("aria-disabled=\"true\"")));
+        mvc.perform(get("/summary").param("year", "2024"))
+                .andExpect(content().string(containsString("year=2023")));
+    }
+
+    @Test
+    void pagesWithQuartersOpenOnTheCurrentQuarterAndMonthOfTheCurrentYear() throws Exception {
+        var today = LocalDate.now();
+        var month = Months.label(today.getMonthValue());
+
+        mvc.perform(get("/investments").param("year", String.valueOf(today.getYear())))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(">" + month + "</th>")));
+        mvc.perform(get("/investments").param("year", "2020"))
+                .andExpect(content().string(containsString(">January</th>")));
+    }
+
+    @Test
+    void investmentsPageShowsOneQuarterAtATimeAndRejectsUnknownQuarters() throws Exception {
+        mvc.perform(get("/investments").param("year", "2026").param("quarter", "2"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("April")))
+                .andExpect(content().string(not(containsString("January</th>"))));
+        mvc.perform(get("/investments").param("year", "2026")).andExpect(status().isOk());
+        mvc.perform(get("/investments").param("year", "2026").param("quarter", "5")).andExpect(status().isBadRequest());
     }
 
     @Test

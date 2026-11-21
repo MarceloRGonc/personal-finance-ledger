@@ -1,6 +1,5 @@
 package com.finances.service;
 
-import com.finances.calc.PortfolioService;
 import com.finances.common.Money;
 import com.finances.common.Months;
 import com.finances.common.Periods;
@@ -31,16 +30,13 @@ public class InvestmentService {
     private final InvestmentBaseRepository bases;
     private final InvestmentContributionRepository contributions;
     private final InvestmentSaleRepository sales;
-    private final PortfolioService portfolio;
 
     public InvestmentService(InvestmentAssetRepository assets, InvestmentBaseRepository bases,
-                             InvestmentContributionRepository contributions, InvestmentSaleRepository sales,
-                             PortfolioService portfolio) {
+                             InvestmentContributionRepository contributions, InvestmentSaleRepository sales) {
         this.assets = assets;
         this.bases = bases;
         this.contributions = contributions;
         this.sales = sales;
-        this.portfolio = portfolio;
     }
 
     @Transactional(readOnly = true)
@@ -52,8 +48,8 @@ public class InvestmentService {
                     .put(contribution.getAssetId(), contribution.getAmount());
             totals.merge(contribution.getAssetId(), contribution.getAmount(), BigDecimal::add);
         }
-        var opening = new HashMap<Long, BigDecimal>();
-        portfolio.portfolio(year).assets().forEach(a -> opening.put(a.id(), a.baseAmount()));
+        var monthTotals = new HashMap<Integer, BigDecimal>();
+        byMonth.forEach((month, amounts) -> monthTotals.put(month, Money.sum(amounts.values())));
 
         var allAssets = assets.findAllByOrderBySortOrderAscIdAsc();
         var names = new HashMap<Long, String>();
@@ -63,7 +59,7 @@ public class InvestmentService {
         var saleRows = sales.findByYearOrderByMonthAscIdAsc(year).stream()
                 .map(sale -> SaleView.of(sale, names.getOrDefault(sale.getAssetId(), "#" + sale.getAssetId())))
                 .toList();
-        return new InvestmentGrid(year, visible, deleted, opening, byMonth, totals,
+        return new InvestmentGrid(year, visible, deleted, byMonth, monthTotals, totals,
                 Money.sum(totals.values().stream().toList()), saleRows,
                 Money.sum(saleRows.stream().map(SaleView::proceeds).toList()),
                 Money.sum(saleRows.stream().map(SaleView::cost).toList()),

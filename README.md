@@ -5,8 +5,8 @@ Java 25, Spring Boot, SQLite, Thymeleaf, HTMX, Tailwind CSS and Chart.js. All da
 
 ## Features
 - **Summary**: yearly cards, monthly roll-up, historical table, comparison across years with year-on-year change and a chart, and bank accounts with a balance per year.
-- **Revenues**: monthly grid for gross pay, allowances and deductions.
-- **Earnings**: per-month list of earnings lines, split by quarter.
+- **Salary**: monthly grid for gross pay, allowances and deductions.
+- **Extra Revenue**: per-month list of extra income lines, split by quarter.
 - **Expenses**: three months side by side per quarter. Add one expense at a time, or paste a whole month (description and amount per line) and check a preview before saving. Entries can be excluded from the total.
 - **Investments**: one column per investment, one row per month, with a sticky month column. Record sales with proceeds and cost, reorder or permanently remove investments, and track loans. Pie charts show allocation and ETFs.
 - **Backup**: download or upload a `.db` snapshot. A daily automatic snapshot keeps the last 14, and a copy is saved before any restore.
@@ -26,7 +26,7 @@ With Docker:
 
 On Linux, run `FINANCES_UID=$(id -u) FINANCES_GID=$(id -g) docker compose up --build` so the `./data` bind mount is writable. The container runs as a non-root user with a read-only filesystem and no extra capabilities.
 
-On first start the app creates `finances.db` in the data folder with its default revenue columns. Add data from the Summary, Revenues, Expenses and Investments pages, or paste a whole month of expenses.
+On first start the app creates `finances.db` in the data folder with its default revenue columns. Add data from the Summary, Salary, Extra Revenue, Expenses and Investments pages, or paste a whole month of expenses.
 
 ## Configuration
 
@@ -34,6 +34,7 @@ On first start the app creates `finances.db` in the data folder with its default
 | --- | --- | --- |
 | `SERVER_ADDRESS` | `127.0.0.1` | Interface to listen on. The container sets `0.0.0.0`. |
 | `FINANCE_DATA_DIR` | `./data` | Folder holding `finances.db`. |
+| `FINANCE_BASE_YEAR` | `2023` | First year of your history. Its yearly figures are typed in on the Summary page; later years are calculated. |
 | `FINANCE_BACKUP_DIR` | `./data/backups` | Where snapshots are kept. |
 
 ## Security
@@ -42,14 +43,14 @@ There is no login. The app is meant for one person on a trusted machine, so it l
 Browsers are protected from other websites by refusing state-changing requests that do not come from the app's own origin, and every response carries a strict Content-Security-Policy, `X-Frame-Options` and `X-Content-Type-Options`. Uploaded backups must pass a SQLite header, integrity and schema check before they replace the database.
 
 ## How the yearly figures work
-- 2023 is the base year. Its Net Value, Invested, Gross, Net and Invested-for-the-year values are typed once on the Summary page.
+- The base year (`FINANCE_BASE_YEAR`, 2023 by default) is the first year of your history. Its Net Value, Invested, Gross, Net and Invested-for-the-year values are typed once on the Summary page.
 - Every later year starts from the previous year's Net Value and Invested. Its Net Value is that year's Total Liquid, and its Invested is the previous Invested plus the year's investments, minus the cost of anything sold.
 - A year with no monthly data keeps the previous year's values.
 - Each year's opening investment values come from the previous year, unless you type an explicit opening value.
 - Bank balances are stored per year. A year without its own balance uses the latest earlier one, so changing this year's balance never rewrites history.
 
 ## Extending
-- New revenue column: Revenues page. Earning columns add to net, deduction columns subtract, info columns are ignored by the default formulas.
+- New revenue column: Salary page. Earning columns add to net, deduction columns subtract, info columns are ignored by the default formulas.
 - New investment: Investments page. Tags choose which pie charts include it.
 - New or changed formula: edit `src/main/java/com/finances/formula/DefaultFormulaCatalog.java`. Month rules become roll-up columns, year rules become summary figures, and portfolio rules feed the investments page. Rules are checked when the app starts.
 - New fields on a table: add a Flyway migration. Never edit an existing migration.

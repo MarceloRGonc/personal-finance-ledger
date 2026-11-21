@@ -4,11 +4,8 @@ import java.time.Year;
 
 public final class Periods {
 
-    /** The year whose figures are typed in by hand. Every later year is calculated from it. */
-    public static final int BASE_YEAR = 2023;
-
-    private static final int MIN_YEAR = 1970;
-    private static final int MAX_YEAR = 2200;
+    public static final int MIN_YEAR = 1970;
+    public static final int MAX_YEAR = 2200;
 
     private Periods() {
     }

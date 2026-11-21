@@ -21,7 +21,8 @@
                class="rounded-md px-3 py-1.5">Page</a>
         </nav>
         <div th:if="${year != null}" class="year-nav">
-            <a th:href="@{/{p}(p=${active},year=${year - 1})}" class="year-btn" aria-label="Previous year">&#8592;</a>
+            <a th:if="${year > baseYear}" th:href="@{/{p}(p=${active},year=${year - 1})}" class="year-btn" aria-label="Previous year">&#8592;</a>
+            <span th:unless="${year > baseYear}" class="year-btn year-btn-disabled" aria-disabled="true" aria-label="Previous year">&#8592;</span>
             <span class="year-label" th:text="${year}">2026</span>
             <a th:href="@{/{p}(p=${active},year=${year + 1})}" class="year-btn" aria-label="Next year">&#8594;</a>
         </div>

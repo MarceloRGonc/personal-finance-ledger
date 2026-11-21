@@ -26,6 +26,7 @@ server:
 
 finance:
   data-dir: ./data
+  base-year: 2023
   backup:
     dir: ./data/backups
     retention: 14

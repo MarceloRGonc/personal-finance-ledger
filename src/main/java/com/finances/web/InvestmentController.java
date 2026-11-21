@@ -5,6 +5,7 @@ import com.finances.calc.LoanService;
 import com.finances.calc.PortfolioService;
 import com.finances.common.Months;
 import com.finances.common.Periods;
+import com.finances.common.Quarters;
 import com.finances.service.InvestmentService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -42,10 +43,16 @@ class InvestmentController {
     }
 
     @GetMapping("/investments")
-    String page(@RequestParam(required = false) Integer year, Model model) {
+    String page(@RequestParam(required = false) Integer year, @RequestParam(name = "quarter", required = false) Integer requestedQuarter,
+                Model model) {
         var selected = Periods.yearOrCurrent(year);
         model.addAttribute("active", "investments");
         model.addAttribute("year", selected);
+        var quarter = QuarterSelection.quarter(selected, requestedQuarter);
+        model.addAttribute("quarter", quarter);
+        model.addAttribute("currentMonth", QuarterSelection.currentMonth(selected));
+        model.addAttribute("quarters", Quarters.ALL);
+        model.addAttribute("quarterMonths", Quarters.months(quarter));
         model.addAttribute("months", Months.ALL);
         model.addAttribute("grid", investments.grid(selected));
         model.addAttribute("portfolio", portfolio.portfolio(selected));

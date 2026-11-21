@@ -86,6 +86,21 @@ class InvestmentManagementTest extends IntegrationTestSupport {
         assertThat(assets.findById(id)).get().satisfies(asset -> assertThat(asset.getTags()).isEqualTo("CHART_ETFS"));
     }
 
+    @Test
+    void gridTotalsEachMonthAcrossAllInvestments() {
+        var a = investments.addAsset("A", "").getId();
+        var b = investments.addAsset("B", "").getId();
+        investments.setContribution(2026, 4, a, new BigDecimal("10"));
+        investments.setContribution(2026, 4, b, new BigDecimal("5.50"));
+        investments.setContribution(2026, 5, a, new BigDecimal("1"));
+
+        var grid = investments.grid(2026);
+
+        assertThat(grid.monthTotals().get(4)).isEqualByComparingTo("15.50");
+        assertThat(grid.monthTotals().get(5)).isEqualByComparingTo("1");
+        assertThat(grid.monthTotals()).doesNotContainKey(6);
+    }
+
     private List<String> names() {
         return assets.findAllByOrderBySortOrderAscIdAsc().stream().map(InvestmentAsset::getName).toList();
     }

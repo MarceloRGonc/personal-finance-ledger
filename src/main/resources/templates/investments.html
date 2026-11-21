@@ -5,53 +5,58 @@
 <header th:replace="~{fragments/layout :: nav}"></header>
 <main class="mx-auto max-w-7xl space-y-6 px-4 py-6">
 
+    <div class="quarter-tabs">
+        <a th:each="q : ${quarters}"
+           th:href="@{/{p}(p=${active},year=${year},quarter=${q})}"
+           th:text="${'Q' + q}"
+           th:classappend="${q == quarter} ? 'quarter-tab-active'"
+           th:aria-current="${q == quarter} ? 'page'"
+           class="quarter-tab">Q1</a>
+    </div>
+
     <section class="card">
         <div class="p-4 pb-0">
             <h2 class="section-heading">Monthly contributions</h2>
-            <p class="text-xs text-slate-500 mt-1">Hover a column header to access move and delete controls.</p>
+            <p class="text-xs text-slate-500 mt-1">Hover an investment name to move or delete it.</p>
         </div>
         <div class="table-scroll mt-3">
             <table class="grid-table">
                 <thead>
                 <tr>
-                    <th class="text-left col-fixed">Month</th>
-                    <th th:each="a : ${grid.assets()}" class="asset-th">
+                    <th class="text-left col-fixed">Investment</th>
+                    <th th:each="m : ${quarterMonths}" th:text="${@fmt.monthName(m)}"
+                        th:classappend="${m == currentMonth} ? 'col-current'">January</th>
+                    <th>Year total</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a : ${grid.assets()}">
+                    <th scope="row" class="asset-th col-fixed">
                         <span th:text="${a.name}">Asset</span>
                         <span class="asset-controls">
-                            <button type="button" class="icon-btn" title="Move left"
-                                    th:attr="hx-post=@{/investments/assets/{id}/up(id=${a.id})}">&larr;</button>
-                            <button type="button" class="icon-btn" title="Move right"
-                                    th:attr="hx-post=@{/investments/assets/{id}/down(id=${a.id})}">&rarr;</button>
+                            <button type="button" class="icon-btn" title="Move up"
+                                    th:attr="hx-post=@{/investments/assets/{id}/up(id=${a.id})}">&uarr;</button>
+                            <button type="button" class="icon-btn" title="Move down"
+                                    th:attr="hx-post=@{/investments/assets/{id}/down(id=${a.id})}">&darr;</button>
                             <button type="button" class="icon-btn text-xs text-rose-700"
                                     th:attr="hx-delete=@{/investments/assets/{id}(id=${a.id},fromYear=${year})}">Del</button>
                         </span>
                     </th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr class="text-slate-500">
-                    <td class="col-fixed">Opening value</td>
-                    <td th:each="a : ${grid.assets()}" class="num">
-                        <input type="number" step="0.01" name="amount" class="cell-input" th:value="${@fmt.plain(grid.openingValues().get(a.id))}"
-                               th:attr="hx-put=@{/investments/openings/{y}/{id}(y=${year},id=${a.id})}" hx-trigger="change">
-                    </td>
-                </tr>
-                <tr th:each="m : ${months}">
-                    <td class="col-fixed" th:text="${@fmt.monthName(m)}">January</td>
-                    <td th:each="a : ${grid.assets()}" class="num" th:with="value=${grid.byMonth().get(m)?.get(a.id)}">
+                    <td th:each="m : ${quarterMonths}" class="num" th:with="value=${grid.byMonth().get(m)?.get(a.id)}">
                         <input type="number" step="0.01" name="amount" class="cell-input" th:value="${@fmt.plain(value)}"
                                th:attr="hx-put=@{/investments/contributions/{y}/{m}/{id}(y=${year},m=${m},id=${a.id})}" hx-trigger="change">
                     </td>
+                    <td class="num font-semibold" th:text="${@fmt.money(grid.totals().get(a.id))}">0</td>
+                </tr>
+                <tr th:if="${grid.assets().isEmpty()}">
+                    <td colspan="5" class="text-slate-400">No investments yet. Add one below.</td>
                 </tr>
                 </tbody>
                 <tfoot>
                 <tr class="font-semibold">
-                    <td class="col-fixed">Year total</td>
-                    <td th:each="a : ${grid.assets()}" class="num" th:text="${@fmt.money(grid.totals().get(a.id))}">0</td>
-                </tr>
-                <tr>
-                    <td class="col-fixed text-slate-500">All investments</td>
-                    <td class="num font-semibold" th:text="${@fmt.money(grid.grandTotal())}">0</td>
+                    <td class="col-fixed">All investments</td>
+                    <td th:each="m : ${quarterMonths}" class="num" th:text="${@fmt.money(grid.monthTotals().get(m))}">0</td>
+                    <td class="num" th:text="${@fmt.money(grid.grandTotal())}">0</td>
                 </tr>
                 </tfoot>
             </table>
@@ -175,7 +180,10 @@
                             hx-confirm="Permanently remove this investment with all its history? This cannot be undone."
                             th:attr="hx-delete=@{/investments/assets/{id}/permanent(id=${a.id()})}">&times;</button>
                 </td>
-                <td class="num" th:text="${@fmt.money(a.baseAmount())}">0</td>
+                <td class="num">
+                    <input type="number" step="0.01" name="amount" class="cell-input" th:value="${@fmt.plain(a.baseAmount())}"
+                           th:attr="hx-put=@{/investments/openings/{y}/{id}(y=${year},id=${a.id()})}" hx-trigger="change">
+                </td>
                 <td class="num" th:text="${@fmt.money(a.contributed())}">0</td>
                 <td class="num" th:text="${@fmt.money(a.sold())}">0</td>
                 <td class="num" th:text="${@fmt.money(a.value())}">0</td>

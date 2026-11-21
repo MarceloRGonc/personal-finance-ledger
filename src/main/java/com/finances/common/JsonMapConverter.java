@@ -1,17 +1,17 @@
 package com.finances.common;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 
 @Converter
 public class JsonMapConverter implements AttributeConverter<Map<String, Object>, String> {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final JsonMapper MAPPER = JsonMapper.builder().build();
     private static final TypeReference<LinkedHashMap<String, Object>> TYPE = new TypeReference<>() {
     };
 
@@ -22,7 +22,7 @@ public class JsonMapConverter implements AttributeConverter<Map<String, Object>,
         }
         try {
             return MAPPER.writeValueAsString(attribute);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("Custom attributes are not serializable", e);
         }
     }
@@ -34,7 +34,7 @@ public class JsonMapConverter implements AttributeConverter<Map<String, Object>,
         }
         try {
             return MAPPER.readValue(dbData, TYPE);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalStateException("Stored custom attributes are not valid JSON", e);
         }
     }

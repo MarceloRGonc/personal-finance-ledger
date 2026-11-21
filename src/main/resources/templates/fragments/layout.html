@@ -15,9 +15,9 @@
     <div class="mx-auto flex max-w-7xl flex-wrap items-center gap-x-8 gap-y-2 px-4 py-3">
         <a th:href="@{/summary}" class="text-lg font-semibold text-emerald-800">Finances</a>
         <nav class="flex flex-wrap gap-1 text-sm">
-            <a th:each="item : ${ {'summary','revenues','earnings','expenses','investments','backup'} }"
-               th:href="@{/{p}(p=${item},year=${year})}" th:text="${#strings.capitalize(item)}"
-               th:classappend="${item == active} ? 'bg-emerald-50 text-emerald-800 font-medium' : 'text-slate-600 hover:bg-slate-100'"
+            <a th:each="item : ${ {'summary':'Summary','revenues':'Salary','earnings':'Extra Revenue','expenses':'Expenses','investments':'Investments','backup':'Backup'} }"
+               th:href="@{/{p}(p=${item.key},year=${year})}" th:text="${item.value}"
+               th:classappend="${item.key == active} ? 'bg-emerald-50 text-emerald-800 font-medium' : 'text-slate-600 hover:bg-slate-100'"
                class="rounded-md px-3 py-1.5">Page</a>
         </nav>
         <div th:if="${year != null}" class="year-nav">

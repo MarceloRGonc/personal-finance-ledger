@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head th:replace="~{fragments/layout :: head('Earnings')}"></head>
+<head th:replace="~{fragments/layout :: head('Extra Revenue')}"></head>
 <body class="bg-slate-50 text-slate-800">
 <header th:replace="~{fragments/layout :: nav}"></header>
 <main class="mx-auto max-w-7xl space-y-6 px-4 py-6">
@@ -28,7 +28,7 @@
                     <td class="num" th:text="${item != null} ? ${@fmt.money(item.amount)} : ''"></td>
                     <td class="row-actions">
                         <th:block th:if="${item != null}">
-                            <button class="icon-btn text-rose-700" title="Delete" hx-confirm="Delete this earning?"
+                            <button class="icon-btn text-rose-700" title="Delete" hx-confirm="Delete this extra revenue line?"
                                     th:attr="hx-delete=@{/earnings/{id}(id=${item.id})}">&times;</button>
                         </th:block>
                     </td>
@@ -48,7 +48,7 @@
     </section>
 
     <section class="card p-4">
-        <h2 class="section-heading mb-3">Add earning</h2>
+        <h2 class="section-heading mb-3">Add extra revenue</h2>
         <form hx-post="/earnings" class="flex flex-wrap items-end gap-3">
             <input type="hidden" name="year" th:value="${year}">
             <label class="field">Month
@@ -64,7 +64,7 @@
             </label>
             <button class="btn btn-primary">Add</button>
         </form>
-        <p class="mt-2 text-xs text-slate-500">Earnings are added to net revenue for the month. Each month can have any number of lines.</p>
+        <p class="mt-2 text-xs text-slate-500">Extra revenue is added to net revenue for the month. Each month can have any number of lines.</p>
     </section>
 
 </main>

@@ -11,7 +11,7 @@ COPY src ./src
 RUN mvn -B -q package -DskipTests \
     && mkdir -p /out/data /out/sqlite-native
 
-FROM gcr.io/distroless/java25-debian13:nonroot@sha256:b0a31b9a063a6fb8132ec93da4cfd8515421ad35e40d7ac79fbebbaaae98227f
+FROM gcr.io/distroless/java25-debian13:nonroot@sha256:4618e7a1a1f5177222985347e1ffd503076f6be5837b89c8fd02800bd8551bde
 
 WORKDIR /app
 
